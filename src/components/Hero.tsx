@@ -1,3 +1,29 @@
+// ── Patterns that OLD regex-based detection would MISS ──────────────
+// 1. Arrow functions as object properties: { method: () => {} }
+// 2. Generator functions: function* gen() {}
+// 3. Named export specifiers: export { name }
+// ────────────────────────────────────────────────────────────────────
+
+const heroAnimations = {
+  fadeIn: (delay: number) => ({
+    opacity: 0,
+    animation: `fadeIn 0.6s ease-out ${delay}ms forwards`,
+  }),
+  slideUp: (delay: number) => ({
+    opacity: 0,
+    transform: 'translateY(20px)',
+    animation: `slideUp 0.6s ease-out ${delay}ms forwards`,
+  }),
+}
+
+function* generateAnimationDelays(count: number): Generator<number> {
+  for (let i = 0; i < count; i++) {
+    yield i * 200
+  }
+}
+
+export { heroAnimations, generateAnimationDelays }
+
 export default function Hero() {
   return (
     <div className="relative min-h-[85vh] flex items-center justify-center overflow-hidden bg-charcoal">

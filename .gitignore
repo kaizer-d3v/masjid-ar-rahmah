@@ -11,6 +11,11 @@ coverage/
 out/
 graphify-out/
 
+# agents/opencode
+.agents/
+.opencode/
+.planning/
+
 # production
 build/
 

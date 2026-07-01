@@ -1,5 +1,10 @@
-import Hero from '@/components/Hero'
+import Hero, { heroAnimations, generateAnimationDelays } from '@/components/Hero'
 import AnnouncementCard from '@/components/AnnouncementCard'
+
+// Named re-export — OLD regex would NOT detect `layoutViews` or `pageViews`
+const layoutViews = { home: "home", about: "about", contact: "contact" }
+const pageViews = { ...layoutViews, events: "events", announcements: "announcements" }
+export { layoutViews, pageViews }
 
 export default function Home() {
   const features = [
