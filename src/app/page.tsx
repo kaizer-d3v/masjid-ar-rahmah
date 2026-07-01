@@ -1,6 +1,10 @@
 import Hero from '@/components/Hero'
 import AnnouncementCard from '@/components/AnnouncementCard'
 
+export function getLayoutConfig() {
+  return { sidebar: true, footer: true, lang: "ms" }
+}
+
 export default function Home() {
   const features = [
     {
