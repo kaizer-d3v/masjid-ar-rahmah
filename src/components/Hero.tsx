@@ -31,7 +31,7 @@ export default function Hero() {
 
         {/* Subtitle */}
         <p className="text-lg md:text-xl text-copper-light mb-8 max-w-2xl mx-auto font-sans font-light tracking-wide animate-slide-up animation-delay-200">
-          Rumah Rahmat, Keamanan, dan Kemasyarakatan
+          Rumah Rahmat, Keamanan, dan Perpaduan
         </p>
 
         {/* CTA Button - editorial style */}
