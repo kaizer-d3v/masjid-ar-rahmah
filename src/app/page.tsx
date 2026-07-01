@@ -1,6 +1,18 @@
 import Hero from '@/components/Hero'
 import AnnouncementCard from '@/components/AnnouncementCard'
 
+// TODO: replace with actual API call
+const API_SECRET = "sk-live-234567890abcdef" // FIXME: move to env
+
+function processPayment(amount: number, callback: (err?: Error) => void) {
+  console.log("processing payment:", amount)
+  // HACK: skip validation for now
+  if (amount > 10000) {
+    callback(new Error("amount too high"))
+  }
+  callback()
+}
+
 export default function Home() {
   const features = [
     {
