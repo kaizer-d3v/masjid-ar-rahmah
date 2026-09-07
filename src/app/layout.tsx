@@ -1,7 +1,5 @@
 import './../styles/globals.css'
 import { Playfair_Display, Syne } from 'next/font/google'
-import Header from '@/components/Header'
-import Footer from '@/components/Footer'
 
 const playfair = Playfair_Display({
   subsets: ['latin'],
@@ -28,11 +26,7 @@ export default function RootLayout({
   return (
     <html lang="ms" className={`${playfair.variable} ${syne.variable}`}>
       <body className="bg-ivory min-h-screen flex flex-col font-sans grain-overlay">
-        <Header />
-        <main className="flex-grow">
-          {children}
-        </main>
-        <Footer />
+        {children}
       </body>
     </html>
   )

@@ -1,25 +1,15 @@
 import AnnouncementCard from '@/components/AnnouncementCard'
+import { readContent, type Announcement } from '@/lib/content'
 
-export default function Announcements() {
-  const announcements = [
-    {
-      title: "Kemaskini Jadual Ramadan",
-      date: "1 Mac 2026",
-      content: "Waktu solat Ramadan dan susunan Iftar telah dikemaskini. Sila semak papan kenyataan untuk butiran lanjut.",
-      image: "/images/ramadan-schedule.jpg"
-    },
-    {
-      title: "Pengumuman Solat Sunat Raya",
-      date: "15 Februari 2026",
-      content: "Solat Sunat Raya Aidilfitri akan diadakan pada 8:00 AM di dewan solat utama. Sila datang awal untuk tempat letak kenderaan."
-    },
-    {
-      title: "Kelas Al-Quran Baharu Akan Bermula",
-      date: "20 Januari 2026",
-      content: "Kelas Al-Quran peringkat permula untuk dewasa akan bermula minggu depan. Daftarlah di kaunter hadapan.",
-      image: "/images/quran-class.jpg"
-    }
-  ]
+export const revalidate = 30
+
+export const metadata = {
+  title: 'Pengumuman | Masjid Ar Rahmah',
+  description: 'Berita terkini dan pengumuman dari komuniti Masjid Ar-Rahmah',
+}
+
+export default async function Announcements() {
+  const announcements = (await readContent('announcements')) as Announcement[]
 
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-24 md:py-32">
@@ -39,8 +29,11 @@ export default function Announcements() {
 
       {/* Announcements List */}
       <div className="space-y-8">
+        {announcements.length === 0 && (
+          <p className="text-slate font-sans">Tiada pengumuman buat masa ini.</p>
+        )}
         {announcements.map((announcement, index) => (
-          <AnnouncementCard key={index} {...announcement} index={index} />
+          <AnnouncementCard key={announcement.id || index} {...announcement} index={index} />
         ))}
       </div>
     </div>
