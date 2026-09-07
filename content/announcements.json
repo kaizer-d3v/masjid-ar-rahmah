@@ -1,0 +1,28 @@
+[
+  {
+    "id": "a1",
+    "title": "Kemaskini Jadual Ramadan",
+    "date": "1 Mac 2026",
+    "image": "/images/ramadan-schedule.jpg",
+    "content": "Waktu solat Ramadan dan susunan Iftar telah dikemaskini. Sila semak papan kenyataan untuk butiran lanjut."
+  },
+  {
+    "id": "a2",
+    "title": "Pengumuman Solat Sunat Raya",
+    "date": "15 Februari 2026",
+    "content": "Solat Sunat Raya Aidilfitri akan diadakan pada 8:00 AM di dewan solat utama. Sila datang awal untuk tempat letak kenderaan."
+  },
+  {
+    "id": "a3",
+    "title": "Kelas Al-Quran Baharu Akan Bermula",
+    "date": "20 Januari 2026",
+    "image": "/images/quran-class.jpg",
+    "content": "Kelas Al-Quran peringkat permula untuk dewasa akan bermula minggu depan. Daftarlah di kaunter hadapan."
+  },
+  {
+    "id": "test1",
+    "title": "UJI ADMIN PANEL",
+    "date": "6 September 2026",
+    "content": "Item ujian write-flow (akan dipadam)."
+  }
+]
