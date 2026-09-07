@@ -1,6 +1,7 @@
 'use client'
 
 import { useMemo, useRef, useState } from 'react'
+import { imgSrc } from '@/lib/images'
 
 type Kind = 'announcements' | 'events'
 
@@ -279,7 +280,7 @@ export default function AdminApp({ initial }: { initial: Record<Kind, Item[]> })
 }
 
 function previewOf(img: string) {
-  return img
+  return imgSrc(img) || img
 }
 
 function IconBtn({ children, onClick, title, disabled, danger }: {

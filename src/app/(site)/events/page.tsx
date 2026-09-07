@@ -1,7 +1,7 @@
 import EventCard from '@/components/EventCard'
 import { readContent, type EventItem } from '@/lib/content'
 
-export const revalidate = 30
+export const dynamic = 'force-dynamic'
 
 export const metadata = {
   title: 'Acara | Masjid Ar Rahmah',

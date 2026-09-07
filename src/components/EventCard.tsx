@@ -1,3 +1,5 @@
+import { imgSrc } from '@/lib/images'
+
 interface EventCardProps {
   title: string
   date: string
@@ -9,14 +11,15 @@ interface EventCardProps {
 }
 
 export default function EventCard({ title, date, time, location, description, image, index = 0 }: EventCardProps) {
+  const src = imgSrc(image)
   return (
     <div
       className="glass p-8 hover:border-copper/40 transition-all duration-500 group animate-fade-in"
       style={{ animationDelay: `${index * 150}ms` }}
     >
-      {image && (
+      {src && (
         <div className="mb-6 -mx-8 -mt-8 overflow-hidden">
-          <img src={image} alt={title} className="w-full h-48 object-cover" />
+          <img src={src} alt={title} className="w-full h-48 object-cover" />
         </div>
       )}
 

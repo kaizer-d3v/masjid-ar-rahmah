@@ -1,3 +1,5 @@
+import { imgSrc } from '@/lib/images'
+
 interface AnnouncementCardProps {
   title: string
   date: string
@@ -7,14 +9,15 @@ interface AnnouncementCardProps {
 }
 
 export default function AnnouncementCard({ title, date, content, image, index = 0 }: AnnouncementCardProps) {
+  const src = imgSrc(image)
   return (
     <div
       className="bg-white p-8 border-l-2 border-copper hover:shadow-lg transition-all duration-500 animate-slide-up"
       style={{ animationDelay: `${index * 150}ms` }}
     >
-      {image && (
+      {src && (
         <div className="mb-6 overflow-hidden">
-          <img src={image} alt={title} className="w-full h-48 object-cover" />
+          <img src={src} alt={title} className="w-full h-48 object-cover" />
         </div>
       )}
 

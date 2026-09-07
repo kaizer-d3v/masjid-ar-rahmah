@@ -30,7 +30,7 @@ function githubHeaders(): Record<string, string> {
   }
 }
 
-// ---------- READ (raw.githubusercontent, no rate limit, cached 30s) ----------
+// ---------- READ (raw.githubusercontent, no rate limit) ----------
 
 // Bundled fallback so pages never fail even if content/*.json is not yet pushed to GitHub.
 import seedAnnouncements from '../../content/announcements.json'
@@ -39,7 +39,11 @@ import seedEvents from '../../content/events.json'
 export async function readContent(kind: ContentKind): Promise<ContentItem[]> {
   try {
     const url = `${RAW_BASE}/content/${kind}.json`
-    const res = await fetch(url, { next: { tags: [kind, 'home'], revalidate: 30 } })
+    const token = process.env.GITHUB_TOKEN
+    const res = await fetch(url, {
+      cache: 'no-store',
+      headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+    })
     if (res.ok) {
       const data = await res.json()
       if (Array.isArray(data)) return data

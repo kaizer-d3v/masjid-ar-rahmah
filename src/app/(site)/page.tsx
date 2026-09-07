@@ -1,7 +1,10 @@
 import Hero from '@/components/Hero'
 import AnnouncementCard from '@/components/AnnouncementCard'
+import { readContent, type Announcement } from '@/lib/content'
 
-export default function Home() {
+export const dynamic = 'force-dynamic'
+
+export default async function Home() {
   const features = [
     {
       icon: '🕌',
@@ -20,25 +23,7 @@ export default function Home() {
     },
   ]
 
-  const announcements = [
-    {
-      title: 'Solat Jumaat',
-      date: '5 Mei 2026',
-      content: 'Solat Jumaat akan diadakan pada pukul 12:30 PM. Sila hadir awal.',
-      image: '/images/announcement-jumaat.jpg',
-    },
-    {
-      title: 'Kelas Al-Quran',
-      date: '10 Mei 2026',
-      content: 'Kelas Al-Quran untuk kanak-kanak akan bermula minggu hadapan. Pendaftaran dibuka.',
-    },
-    {
-      title: 'Gotong Royong',
-      date: '15 Mei 2026',
-      content: 'Gotong royong membersihkan kawasan masjid. Mari kita bersama-sama.',
-      image: '/images/announcement-gotong.jpg',
-    },
-  ]
+  const announcements = (await readContent('announcements')) as Announcement[]
 
   return (
     <>
@@ -113,10 +98,11 @@ export default function Home() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {announcements.map((announcement, i) => (
             <AnnouncementCard
-              key={announcement.title}
+              key={announcement.id || i}
               title={announcement.title}
               date={announcement.date}
               content={announcement.content}
+              image={announcement.image}
               index={i}
             />
           ))}

@@ -1,7 +1,7 @@
 import AnnouncementCard from '@/components/AnnouncementCard'
 import { readContent, type Announcement } from '@/lib/content'
 
-export const revalidate = 30
+export const dynamic = 'force-dynamic'
 
 export const metadata = {
   title: 'Pengumuman | Masjid Ar Rahmah',
