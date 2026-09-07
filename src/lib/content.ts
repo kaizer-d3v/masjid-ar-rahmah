@@ -20,94 +20,136 @@ export interface EventItem {
 
 export type ContentItem = Announcement | EventItem
 
-function githubHeaders(): Record<string, string> {
-  const token = process.env.GITHUB_TOKEN
-  if (!token) throw new Error('GITHUB_TOKEN is not set — cannot commit content changes')
+// ---------- Supabase config ----------
+
+const SUPA_URL = process.env.SUPABASE_URL || ''
+const SUPA_KEY = process.env.SUPABASE_SERVICE_KEY || ''
+
+const TABLE: Record<ContentKind, string> = { announcements: 'announcements', events: 'events' }
+
+function supaHeaders(extra: Record<string, string> = {}): Record<string, string> {
+  if (!SUPA_URL || !SUPA_KEY) throw new Error('SUPABASE_URL / SUPABASE_SERVICE_KEY not configured')
   return {
-    Authorization: `Bearer ${token}`,
+    apikey: SUPA_KEY,
+    Authorization: `Bearer ${SUPA_KEY}`,
     'Content-Type': 'application/json',
-    'X-GitHub-Api-Version': '2022-11-28',
+    ...extra,
   }
 }
 
-// ---------- READ (raw.githubusercontent, no rate limit) ----------
+async function supa(path: string, init: { method?: string; body?: unknown; headers?: Record<string, string> } = {}) {
+  const res = await fetch(`${SUPA_URL}${path}`, {
+    method: init.method || 'GET',
+    headers: supaHeaders(init.headers),
+    body: init.body !== undefined ? JSON.stringify(init.body) : undefined,
+    cache: 'no-store',
+  })
+  if (!res.ok) {
+    const err = await res.text()
+    throw new Error(`Supabase ${init.method || 'GET'} ${path}: HTTP ${res.status} ${err.slice(0, 200)}`)
+  }
+  return res
+}
 
-// Bundled fallback so pages never fail even if content/*.json is not yet pushed to GitHub.
+// ---------- READ ----------
+
+// Bundled fallback so pages never fail even if Supabase is unreachable.
 import seedAnnouncements from '../../content/announcements.json'
 import seedEvents from '../../content/events.json'
 
 export async function readContent(kind: ContentKind): Promise<ContentItem[]> {
-  try {
-    const url = `${RAW_BASE}/content/${kind}.json`
-    const token = process.env.GITHUB_TOKEN
-    const res = await fetch(url, {
-      cache: 'no-store',
-      headers: token ? { Authorization: `Bearer ${token}` } : undefined,
-    })
-    if (res.ok) {
-      const data = await res.json()
-      if (Array.isArray(data)) return data
+  if (SUPA_URL && SUPA_KEY) {
+    try {
+      const res = await supa(`/rest/v1/${TABLE[kind]}?select=*&order=sort_order.asc,id.asc`)
+      const rows = (await res.json()) as Array<Record<string, unknown>>
+      return rows.map(r => {
+        if (kind === 'announcements') {
+          return {
+            id: String(r.id), title: String(r.title), date: String(r.date_label),
+            content: String(r.content), image: (r.image as string) || undefined,
+          }
+        }
+        return {
+          id: String(r.id), title: String(r.title), date: String(r.date_label),
+          time: String(r.time_label ?? ''), location: String(r.location ?? ''),
+          description: String(r.description), image: (r.image as string) || undefined,
+        }
+      })
+    } catch {
+      /* fall through to seed */
     }
-  } catch {
-    /* fall through to seed */
   }
   return (kind === 'announcements' ? seedAnnouncements : seedEvents) as ContentItem[]
 }
 
-// ---------- WRITE (GitHub Contents API = git commit) ----------
+// ---------- WRITE ----------
 
-async function getFileMeta(path: string): Promise<{ sha: string } | null> {
-  const res = await fetch(
-    `https://api.github.com/repos/${REPO}/contents/${encodeURIComponent(path)}?ref=${BRANCH}`,
-    { headers: { ...githubHeaders(), Accept: 'application/vnd.github+json' }, cache: 'no-store' },
-  )
-  if (res.status === 404) return null
-  if (!res.ok) throw new Error(`GitHub lookup ${path}: HTTP ${res.status}`)
-  const j = await res.json()
-  return { sha: j.sha }
-}
+export async function writeContent(kind: ContentKind, items: ContentItem[], _message?: string) {
+  const table = TABLE[kind]
+  const rows = items.map((it, i) => {
+    const base: Record<string, unknown> = {
+      id: it.id, title: it.title, date_label: it.date,
+      image: it.image || null, sort_order: i, updated_at: new Date().toISOString(),
+    }
+    if (kind === 'announcements') {
+      base.content = (it as Announcement).content
+    } else {
+      base.time_label = (it as EventItem).time || ''
+      base.location = (it as EventItem).location || ''
+      base.description = (it as EventItem).description
+    }
+    return base
+  })
 
-async function putFile(path: string, base64: string, message: string, sha?: string | null) {
-  const body: Record<string, unknown> = { message, content: base64, branch: BRANCH }
-  if (sha) body.sha = sha
-  const res = await fetch(
-    `https://api.github.com/repos/${REPO}/contents/${encodeURIComponent(path)}`,
-    { method: 'PUT', headers: githubHeaders(), body: JSON.stringify(body) },
-  )
-  if (!res.ok) {
-    const err = await res.text()
-    throw new Error(`GitHub commit ${path}: HTTP ${res.status} ${err.slice(0, 200)}`)
+  // 1) upsert everything (insert new / update existing), order via sort_order
+  await supa(`/rest/v1/${table}`, {
+    method: 'POST',
+    headers: { Prefer: 'resolution=merge-duplicates,return=minimal' },
+    body: rows,
+  })
+  // 2) delete rows that are no longer in the payload
+  if (rows.length > 0) {
+    const keep = rows.map(r => `"${r.id}"`).join(',')
+    await supa(`/rest/v1/${table}?id=not.in.(${keep})`, { method: 'DELETE' })
+  } else {
+    // payload empty -> clear table
+    await supa(`/rest/v1/${table}?id=neq.__none__`, { method: 'DELETE' })
   }
-  return res.json()
 }
 
-export async function writeContent(kind: ContentKind, items: ContentItem[], message: string) {
-  const path = `content/${kind}.json`
-  const meta = await getFileMeta(path)
-  const base64 = Buffer.from(JSON.stringify(items, null, 2) + '\n', 'utf8').toString('base64')
-  await putFile(path, base64, message, meta?.sha ?? null)
-  revalidateKind(kind)
-}
+// ---------- IMAGE UPLOAD (Supabase Storage, public bucket "images") ----------
 
 export async function uploadImage(file: File): Promise<string> {
   if (!file.type.startsWith('image/')) throw new Error('Only image files are allowed')
   if (file.size > 3 * 1024 * 1024) throw new Error('Image too large (max 3MB)')
-  const safe = file.name.toLowerCase().replace(/[^a-z0-9._-]+/g, '-').replace(/^-+|-+$/g, '') || 'image.jpg'
-  const path = `public/images/${Date.now()}-${safe}`
-  const buf = Buffer.from(await file.arrayBuffer()).toString('base64')
-  const meta = await getFileMeta(path)
-  await putFile(path, buf, `admin: upload ${path}`, meta?.sha ?? null)
-  return `/images/${path.split('/').pop()}`
+  const ext = (file.name.split('.').pop() || 'jpg').toLowerCase().replace(/[^a-z0-9]/g, '') || 'jpg'
+  const safe = file.name.toLowerCase().replace(/\.[^.]+$/, '').replace(/[^a-z0-9._-]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 60)
+  const path = `${Date.now()}-${safe}.${ext}`
+  const buf = await file.arrayBuffer()
+  const res = await fetch(`${SUPA_URL}/storage/v1/object/images/${path}`, {
+    method: 'POST',
+    headers: {
+      apikey: SUPA_KEY,
+      Authorization: `Bearer ${SUPA_KEY}`,
+      'Content-Type': file.type || 'application/octet-stream',
+      'x-upsert': 'true',
+    },
+    body: buf,
+    cache: 'no-store',
+  })
+  if (!res.ok) {
+    const err = await res.text()
+    throw new Error(`Storage upload: HTTP ${res.status} ${err.slice(0, 200)}`)
+  }
+  return `${SUPA_URL}/storage/v1/object/public/images/${path}`
 }
 
 // ---------- CACHE REVALIDATION ----------
 
 export function revalidateKind(kind: ContentKind) {
-  // best-effort: tell Vercel the tagged routes are fresh now
-  import('next/cache')
-    .then(({ revalidateTag }) => {
-      revalidateTag(kind)
-      revalidateTag('home')
-    })
-    .catch(() => {})
+  // no ISR anymore — pages are force-dynamic, nothing to revalidate
+  void kind
+  void RAW_BASE
+  void REPO
+  void BRANCH
 }
