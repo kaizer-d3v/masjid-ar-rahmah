@@ -1,0 +1,28 @@
+[
+  {
+    "id": "e1",
+    "title": "Bulanan Kajian Al-Quran",
+    "date": "Setiap Hari Sabtu",
+    "time": "Selepas Solat Maghrib",
+    "location": "Dewan Solat Utama",
+    "description": "Sertailah kami untuk perbincangan menarik tentang ayat-ayat terpilih dari Al-Quran dengan aplikasi praktikal dalam kehidupan.",
+    "image": "/images/quran-study.jpg"
+  },
+  {
+    "id": "e2",
+    "title": "Iftar Masyarakat",
+    "date": "Setiap Jumaat sepanjang Ramadan",
+    "time": "Waktu Maghrib (Matahari Terbenam)",
+    "location": "Dewan Makan Masjid",
+    "description": "Berbukalah puasa bersama masyarakat. Semua dialu-alukan untuk bersama kami dalam Iftar dan solat Maghrib."
+  },
+  {
+    "id": "e3",
+    "title": "Bengkel Islam Remaja",
+    "date": "15 Mac 2026",
+    "time": "2:00 PM - 4:00 PM",
+    "location": "Dewan Masyarakat",
+    "description": "Bengkel interaktif untuk remaja yang merangkumi ajaran Islam asas dan pembinaan sahsiah.",
+    "image": "/images/youth-workshop.jpg"
+  }
+]
