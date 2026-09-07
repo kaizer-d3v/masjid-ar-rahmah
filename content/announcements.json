@@ -18,5 +18,11 @@
     "date": "20 Januari 2026",
     "image": "/images/quran-class.jpg",
     "content": "Kelas Al-Quran peringkat permula untuk dewasa akan bermula minggu depan. Daftarlah di kaunter hadapan."
+  },
+  {
+    "id": "live1",
+    "title": "UJI PRODUKSI LIVE",
+    "date": "7 September 2026",
+    "content": "Ujian e2e production (akan dipadam)."
   }
 ]
